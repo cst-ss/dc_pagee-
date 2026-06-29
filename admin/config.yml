@@ -1,0 +1,68 @@
+backend:
+  name: github
+  repo: TU_USUARIO/diego-castillo-web
+  branch: main
+
+media_folder: "IMG"
+public_folder: "/IMG"
+
+collections:
+  - name: "shows"
+    label: "Shows y Fechas"
+    folder: "_data/shows"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Nombre del evento", name: "title", widget: "string" }
+      - { label: "Ciudad y lugar", name: "place", widget: "string" }
+      - { label: "Día (ej: AGO)", name: "day", widget: "string" }
+      - { label: "Mes/Año (ej: 2026)", name: "monthyr", widget: "string" }
+      - label: "Estado"
+        name: "status"
+        widget: "select"
+        options: ["Confirmado", "Por confirmar", "Agotado", "Cancelado", "Pasado"]
+      - { label: "Link de entradas", name: "ticketLink", widget: "string", required: false }
+
+  - name: "settings"
+    label: "Configuración del sitio"
+    files:
+      - label: "Hero / Portada"
+        name: "hero"
+        file: "_data/hero.yml"
+        fields:
+          - { label: "Título", name: "title", widget: "string", default: "Diego Castillo" }
+          - { label: "Tagline", name: "tagline", widget: "string" }
+          - { label: "Eyebrow", name: "eyebrow", widget: "string" }
+          - { label: "Foto de fondo", name: "image", widget: "image", required: false }
+          - { label: "Texto botón principal", name: "btn1", widget: "string", default: "Reservar show" }
+          - { label: "Texto botón secundario", name: "btn2", widget: "string", default: "Escuchar" }
+
+      - label: "Single destacado"
+        name: "music"
+        file: "_data/music.yml"
+        fields:
+          - { label: "Título del single", name: "title", widget: "string" }
+          - { label: "Tipo (Single / EP / Álbum)", name: "type", widget: "string" }
+          - { label: "Año", name: "year", widget: "string" }
+          - { label: "Portada", name: "cover", widget: "image", required: false }
+          - { label: "Link Spotify", name: "spotify", widget: "string", required: false }
+          - { label: "Link Apple Music", name: "apple", widget: "string", required: false }
+          - { label: "Link YouTube", name: "youtube", widget: "string", required: false }
+
+      - label: "Redes sociales"
+        name: "socials"
+        file: "_data/socials.yml"
+        fields:
+          - { label: "Instagram", name: "instagram", widget: "string", required: false }
+          - { label: "YouTube", name: "youtube", widget: "string", required: false }
+          - { label: "Spotify", name: "spotify", widget: "string", required: false }
+          - { label: "Apple Music", name: "apple", widget: "string", required: false }
+          - { label: "TikTok", name: "tiktok", widget: "string", required: false }
+
+      - label: "Contacto y Booking"
+        name: "contact"
+        file: "_data/contact.yml"
+        fields:
+          - { label: "Correo de contacto", name: "email", widget: "string", required: false }
+          - { label: "WhatsApp / Teléfono", name: "phone", widget: "string", required: false }
+          - { label: "Nombre representante", name: "manager", widget: "string", required: false }
