@@ -1,6 +1,6 @@
 backend:
   name: github
-  repo: TU_USUARIO/diego-castillo-web
+  repo: cst-ss/dc_pagee-
   branch: main
 
 media_folder: "IMG"
