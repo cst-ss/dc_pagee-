@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Diego Castillo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #080808;
+      --surface: #111111;
+      --surface2: #1a1a1a;
+      --border: #2a2a2a;
+      --gold: #C9A96E;
+      --gold-dim: rgba(201,169,110,0.15);
+      --white: #F0EEE9;
+      --muted: #666;
+      --green: #2a6e40;
+      --red: #7e2a2a;
+      --font: 'Plus Jakarta Sans', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font); background: var(--bg); color: var(--white); min-height: 100vh; display: flex; }
+
+    /* LOGIN */
+    #login-screen {
+      position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+      background: var(--bg); z-index: 1000;
+    }
+    .login-box {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+      padding: 48px 40px; width: 100%; max-width: 400px;
+    }
+    .login-box h1 { font-size: 1.5rem; font-weight: 800; margin-bottom: 4px; }
+    .login-box p { color: var(--muted); font-size: 0.85rem; margin-bottom: 32px; }
+    .login-box label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px; }
+    .login-box input {
+      width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+      padding: 12px 14px; color: var(--white); font-family: var(--font); font-size: 0.9rem;
+      margin-bottom: 16px; outline: none; transition: border-color .2s;
+    }
+    .login-box input:focus { border-color: var(--gold); }
+    .login-btn {
+      width: 100%; background: var(--gold); color: #000; font-family: var(--font); font-weight: 700;
+      font-size: 0.9rem; border: none; border-radius: 8px; padding: 14px; cursor: pointer;
+      transition: opacity .2s;
+    }
+    .login-btn:hover { opacity: .85; }
+    .login-error { color: #e57373; font-size: 0.82rem; margin-top: 8px; display: none; }
+    .login-gold { color: var(--gold); }
+
+    /* SIDEBAR */
+    #sidebar {
+      width: 240px; min-width: 240px; background: var(--surface); border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; padding: 24px 0; position: fixed; top: 0; left: 0;
+      height: 100vh; z-index: 10; overflow-y: auto;
+    }
+    .sidebar-brand {
+      padding: 0 20px 24px; border-bottom: 1px solid var(--border); margin-bottom: 12px;
+    }
+    .sidebar-brand strong { font-size: 1rem; font-weight: 800; }
+    .sidebar-brand span { display: block; font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+    .sidebar-brand .dot { color: var(--gold); }
+    .sidebar-nav a {
+      display: flex; align-items: center; gap: 10px; padding: 10px 20px;
+      color: var(--muted); text-decoration: none; font-size: 0.85rem; font-weight: 500;
+      border-left: 2px solid transparent; transition: all .2s;
+    }
+    .sidebar-nav a:hover { color: var(--white); background: var(--surface2); }
+    .sidebar-nav a.active { color: var(--white); border-left-color: var(--gold); background: var(--gold-dim); }
+    .sidebar-nav .nav-icon { width: 16px; height: 16px; opacity: .7; flex-shrink: 0; }
+    .sidebar-footer { margin-top: auto; padding: 16px 20px; border-top: 1px solid var(--border); }
+    .logout-btn {
+      width: 100%; background: transparent; border: 1px solid var(--border); color: var(--muted);
+      font-family: var(--font); font-size: 0.8rem; padding: 9px; border-radius: 8px; cursor: pointer;
+      transition: all .2s;
+    }
+    .logout-btn:hover { border-color: var(--gold); color: var(--white); }
+
+    /* MAIN */
+    #main { margin-left: 240px; flex: 1; padding: 32px; max-width: 900px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; }
+    .topbar h2 { font-size: 1.4rem; font-weight: 800; }
+    .save-btn {
+      background: var(--gold); color: #000; border: none; font-family: var(--font); font-weight: 700;
+      font-size: 0.85rem; padding: 10px 22px; border-radius: 8px; cursor: pointer;
+      transition: opacity .2s; display: flex; align-items: center; gap: 8px;
+    }
+    .save-btn:hover { opacity: .85; }
+    .save-btn:disabled { opacity: .4; cursor: not-allowed; }
+    .save-btn.success { background: var(--green); color: #fff; }
+    .save-btn.error { background: var(--red); color: #fff; }
+
+    /* PANELS */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* CARDS */
+    .card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 24px; margin-bottom: 20px;
+    }
+    .card h3 { font-size: 0.9rem; font-weight: 700; color: var(--gold); text-transform: uppercase;
+      letter-spacing: .08em; margin-bottom: 18px; }
+
+    /* FORM FIELDS */
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+    .field input, .field textarea, .field select {
+      width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+      padding: 10px 12px; color: var(--white); font-family: var(--font); font-size: 0.88rem;
+      outline: none; transition: border-color .2s;
+    }
+    .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--gold); }
+    .field textarea { resize: vertical; min-height: 80px; }
+    .field select option { background: var(--surface2); }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+    /* SHOWS LIST */
+    .show-item {
+      background: var(--surface2); border: 1px solid var(--border); border-radius: 10px;
+      padding: 16px; margin-bottom: 10px; display: flex; align-items: flex-start; gap: 12px;
+    }
+    .show-item-body { flex: 1; display: grid; grid-template-columns: 80px 80px 1fr 140px 120px; gap: 10px; align-items: center; }
+    .show-del {
+      background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 6px;
+      padding: 6px 10px; cursor: pointer; font-size: 0.8rem; flex-shrink: 0;
+      transition: all .2s;
+    }
+    .show-del:hover { border-color: #e57373; color: #e57373; }
+    .add-btn {
+      background: var(--surface2); border: 1px dashed var(--border); color: var(--gold);
+      font-family: var(--font); font-size: 0.85rem; font-weight: 600; border-radius: 10px;
+      padding: 12px; width: 100%; cursor: pointer; transition: all .2s; margin-top: 4px;
+    }
+    .add-btn:hover { border-color: var(--gold); background: var(--gold-dim); }
+
+    /* GALLERY */
+    .gallery-admin { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-bottom: 12px; }
+    .gallery-admin-item {
+      position: relative; border-radius: 8px; overflow: hidden;
+      background: var(--surface2); border: 1px solid var(--border); aspect-ratio: 1;
+    }
+    .gallery-admin-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .gallery-admin-item .g-del {
+      position: absolute; top: 6px; right: 6px; background: rgba(0,0,0,.7);
+      border: none; color: #fff; border-radius: 50%; width: 26px; height: 26px;
+      cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center;
+    }
+    .gallery-admin-item input {
+      position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,.7);
+      border: none; border-top: 1px solid var(--border); color: var(--white);
+      font-family: var(--font); font-size: 0.72rem; padding: 5px 8px; outline: none;
+    }
+    .gallery-add {
+      border: 2px dashed var(--border); border-radius: 8px; background: var(--surface2);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      aspect-ratio: 1; cursor: pointer; color: var(--muted); font-size: 0.8rem; gap: 6px;
+      transition: all .2s;
+    }
+    .gallery-add:hover { border-color: var(--gold); color: var(--gold); }
+
+    /* PARAGRAPHS */
+    .para-item { display: flex; gap: 8px; margin-bottom: 8px; align-items: flex-start; }
+    .para-item textarea { flex: 1; min-height: 60px; }
+    .para-del {
+      background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 6px;
+      padding: 6px 8px; cursor: pointer; font-size: 0.8rem; flex-shrink: 0; margin-top: 2px;
+      transition: all .2s;
+    }
+    .para-del:hover { border-color: #e57373; color: #e57373; }
+
+    /* HIGHLIGHTS */
+    .hl-item { display: grid; grid-template-columns: 70px 1fr 1fr auto; gap: 8px; margin-bottom: 8px; align-items: center; }
+
+    /* PRESS */
+    .press-item {
+      background: var(--surface2); border: 1px solid var(--border); border-radius: 10px;
+      padding: 16px; margin-bottom: 10px;
+    }
+    .press-item-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .press-item-top strong { font-size: 0.85rem; color: var(--gold); }
+
+    /* VIDEOS */
+    .video-item { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; align-items: center;
+      background: var(--surface2); border: 1px solid var(--border); border-radius: 10px;
+      padding: 14px; margin-bottom: 8px; }
+
+    /* STATUS */
+    .status-bar {
+      position: fixed; bottom: 24px; right: 32px; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 10px; padding: 12px 18px;
+      font-size: 0.83rem; display: none; align-items: center; gap: 8px; z-index: 100;
+    }
+    .status-bar.show { display: flex; }
+    .status-bar.ok { border-color: var(--green); color: #4caf82; }
+    .status-bar.err { border-color: #e57373; color: #e57373; }
+
+    /* CONFIRM MODAL */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.7); display: flex;
+      align-items: center; justify-content: center; z-index: 500; display: none;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 32px; max-width: 360px; width: 100%; text-align: center;
+    }
+    .modal-box h4 { font-size: 1.1rem; font-weight: 700; margin-bottom: 10px; }
+    .modal-box p { color: var(--muted); font-size: 0.85rem; margin-bottom: 24px; }
+    .modal-btns { display: flex; gap: 10px; justify-content: center; }
+    .modal-cancel { background: var(--surface2); border: 1px solid var(--border); color: var(--white);
+      font-family: var(--font); padding: 10px 22px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; }
+    .modal-confirm { background: #e57373; border: none; color: #fff; font-family: var(--font);
+      font-weight: 700; padding: 10px 22px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      #sidebar { width: 200px; min-width: 200px; }
+      #main { margin-left: 200px; padding: 20px; }
+      .row2, .row3 { grid-template-columns: 1fr; }
+      .show-item-body { grid-template-columns: 1fr 1fr; }
+      .hl-item { grid-template-columns: 70px 1fr; }
+    }
+    @media (max-width: 580px) {
+      #sidebar { display: none; }
+      #main { margin-left: 0; }
+    }
+
+    /* CONFIG */
+    .config-info { background: var(--gold-dim); border: 1px solid rgba(201,169,110,.3); border-radius: 8px;
+      padding: 12px 16px; font-size: 0.83rem; color: var(--gold); margin-bottom: 20px; }
+    .badge-preview { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem;
+      font-weight: 600; background: var(--gold-dim); color: var(--gold); }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <h1>Diego <span class="login-gold">Castillo</span></h1>
+    <p>Panel de administración · Acceso privado</p>
+    <div class="field">
+      <label>Usuario</label>
+      <input type="text" id="login-user" placeholder="admin" autocomplete="username">
+    </div>
+    <div class="field">
+      <label>Contraseña</label>
+      <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="login-btn" onclick="doLogin()">Ingresar</button>
+    <div class="login-error" id="login-error">Usuario o contraseña incorrectos.</div>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div class="sidebar-brand">
+    <strong>Diego <span class="dot">Castillo</span></strong>
+    <span>Panel de administración</span>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="#" class="active" onclick="showPanel('hero',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="14" height="14" rx="2"/><path d="M1 10l3-3 3 3 4-5 4 5"/></svg>
+      Hero / Portada
+    </a>
+    <a href="#" onclick="showPanel('shows',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 2v2M11 2v2M2 6h12"/></svg>
+      Shows
+    </a>
+    <a href="#" onclick="showPanel('music',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="10" r="2"/><path d="M7 12V4l7-2v8"/></svg>
+      Música
+    </a>
+    <a href="#" onclick="showPanel('bio',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
+      Biografía
+    </a>
+    <a href="#" onclick="showPanel('gallery',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="14" height="10" rx="2"/><circle cx="5" cy="7" r="1.5"/><path d="M1 11l3.5-3.5L8 11l3-4 4 4"/></svg>
+      Galería
+    </a>
+    <a href="#" onclick="showPanel('videos',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="10" height="10" rx="2"/><path d="M11 6l4-2v8l-4-2"/></svg>
+      Videos
+    </a>
+    <a href="#" onclick="showPanel('press',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 6h6M5 9h4"/></svg>
+      Prensa
+    </a>
+    <a href="#" onclick="showPanel('socials',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="4" cy="8" r="2"/><circle cx="12" cy="4" r="2"/><circle cx="12" cy="12" r="2"/><path d="M6 7.2l4-2.4M6 8.8l4 2.4"/></svg>
+      Redes sociales
+    </a>
+    <a href="#" onclick="showPanel('config',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.1 3.1l1.4 1.4M11.5 11.5l1.4 1.4M3.1 12.9l1.4-1.4M11.5 4.5l1.4-1.4"/></svg>
+      Configuración
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="logout-btn" onclick="doLogout()">Cerrar sesión</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- HERO -->
+  <div class="panel active" id="panel-hero">
+    <div class="topbar">
+      <h2>Hero / Portada</h2>
+      <button class="save-btn" onclick="savePanel('hero')">Guardar cambios</button>
+    </div>
+    <div class="card">
+      <h3>Texto principal</h3>
+      <div class="row2">
+        <div class="field"><label>Eyebrow (texto pequeño)</label><input id="hero-eyebrow"></div>
+        <div class="field"><label>Título</label><input id="hero-title"></div>
+      </div>
+      <div class="field"><label>Tagline</label><textarea id="hero-tagline" style="min-height:60px"></textarea></div>
+    </div>
+    <div class="card">
+      <h3>Botones</h3>
+      <div class="row2">
+        <div class="field"><label>Texto botón principal</label><input id="hero-btn1-text"></div>
+        <div class="field"><label>Link botón principal</label><input id="hero-btn1-link"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Texto botón secundario</label><input id="hero-btn2-text"></div>
+        <div class="field"><label>Link botón secundario</label><input id="hero-btn2-link"></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Imagen de fondo</h3>
+      <div class="field"><label>Ruta de la imagen (ej: IMG/_SBK1282.jpg o URL Cloudinary)</label><input id="hero-image"></div>
+    </div>
+  </div>
+
+  <!-- SHOWS -->
+  <div class="panel" id="panel-shows">
+    <div class="topbar">
+      <h2>Shows</h2>
+      <button class="save-btn" onclick="savePanel('shows')">Guardar cambios</button>
+    </div>
+    <div class="card">
+      <h3>Próximo show destacado</h3>
+      <div class="row3">
+        <div class="field"><label>Mes (ej: AGO)</label><input id="ns-month"></div>
+        <div class="field"><label>Año</label><input id="ns-year"></div>
+        <div class="field"><label>Estado</label><input id="ns-badge" placeholder="Confirmado"></div>
+      </div>
+      <div class="field"><label>Título del evento</label><input id="ns-title"></div>
+      <div class="row2">
+        <div class="field"><label>Lugar y ciudad</label><input id="ns-venue"></div>
+        <div class="field"><label>Link (botón "Más información")</label><input id="ns-link"></div>
+      </div>
+      <div class="field"><label>Texto del botón</label><input id="ns-link-text"></div>
+    </div>
+    <div class="card">
+      <h3>Lista de shows</h3>
+      <div id="shows-list-admin"></div>
+      <button class="add-btn" onclick="addShow()">+ Agregar show</button>
+    </div>
+  </div>
+
+  <!-- MUSIC -->
+  <div class="panel" id="panel-music">
+    <div class="topbar">
+      <h2>Música</h2>
+      <button class="save-btn" onclick="savePanel('music')">Guardar cambios</button>
+    </div>
+    <div class="card">
+      <h3>Single destacado</h3>
+      <div class="row3">
+        <div class="field"><label>Etiqueta (ej: Último lanzamiento)</label><input id="music-type"></div>
+        <div class="field"><label>Título</label><input id="music-title"></div>
+        <div class="field"><label>Meta (ej: Single · 2026)</label><input id="music-meta"></div>
+      </div>
+      <div class="field"><label>Portada (ruta o URL)</label><input id="music-cover" placeholder="IMG/cover-cool.jpg"></div>
+    </div>
+    <div class="card">
+      <h3>Links de plataformas</h3>
+      <div class="row2">
+        <div class="field"><label>Spotify</label><input id="music-spotify"></div>
+        <div class="field"><label>Apple Music</label><input id="music-apple"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>YouTube</label><input id="music-youtube"></div>
+        <div class="field"><label>[untitled]</label><input id="music-untitled"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Instagram</label><input id="music-instagram"></div>
+        <div class="field"><label>TikTok</label><input id="music-tiktok"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BIO -->
+  <div class="panel" id="panel-bio">
+    <div class="topbar">
+      <h2>Biografía</h2>
+      <button class="save-btn" onclick="savePanel('bio')">Guardar cambios</button>
+    </div>
+    <div class="card">
+      <h3>Foto y cita</h3>
+      <div class="field"><label>Foto de retrato (ruta o URL)</label><input id="bio-photo" placeholder="IMG/_SBK1304.jpg"></div>
+      <div class="field"><label>Cita destacada</label><textarea id="bio-quote" style="min-height:60px"></textarea></div>
+    </div>
+    <div class="card">
+      <h3>Párrafos de biografía</h3>
+      <div id="bio-paras"></div>
+      <button class="add-btn" onclick="addPara()">+ Agregar párrafo</button>
+    </div>
+    <div class="card">
+      <h3>Hitos de carrera</h3>
+      <div id="bio-highlights"></div>
+      <button class="add-btn" onclick="addHighlight()">+ Agregar hito</button>
+    </div>
+  </div>
+
+  <!-- GALLERY -->
+  <div class="panel" id="panel-gallery">
+    <div class="topbar">
+      <h2>Galería</h2>
+      <button class="save-btn" onclick="savePanel('gallery')">Guardar cambios</button>
+    </div>
+    <div class="card">
+      <h3>Fotos (reordena con drag & drop)</h3>
+      <div class="gallery-admin" id="gallery-admin"></div>
+      <div style="margin-top:8px">
+        <div class="field"><label>Agregar foto (URL o ruta)</label>
+          <div style="display:flex;gap:8px">
+            <input id="gallery-new-src" placeholder="IMG/mi-foto.jpg o https://...">
+            <button class="add-btn" style="width:auto;padding:10px 16px;margin:0" onclick="addGalleryItem()">Agregar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIDEOS -->
+  <div class="panel" id="panel-videos">
+    <div class="topbar">
+      <h2>Videos</h2>
+      <button class="save-btn" onclick="savePanel('videos')">Guardar cambios</button>
+    </div>
+    <div class="card">
+      <h3>Videos (YouTube embed o MP4)</h3>
+      <div id="videos-admin"></div>
+      <button class="add-btn" onclick="addVideo()">+ Agregar video</button>
+    </div>
+  </div>
+
+  <!-- PRESS -->
+  <div class="panel" id="panel-press">
+    <div class="topbar">
+      <h2>Prensa</h2>
+      <button class="save-btn" onclick="savePanel('press')">Guardar cambios</button>
+    </div>
+    <div class="card">
+      <h3>Notas de prensa</h3>
+      <div id="press-cards"></div>
+      <button class="add-btn" onclick="addPressCard()">+ Agregar nota</button>
+    </div>
+    <div class="card">
+      <h3>Apariciones</h3>
+      <div id="press-appearances"></div>
+      <button class="add-btn" onclick="addAppearance()">+ Agregar aparición</button>
+    </div>
+  </div>
+
+  <!-- SOCIALS -->
+  <div class="panel" id="panel-socials">
+    <div class="topbar">
+      <h2>Redes sociales</h2>
+      <button class="save-btn" onclick="savePanel('socials')">Guardar cambios</button>
+    </div>
+    <div class="card">
+      <h3>Links de redes</h3>
+      <div class="row2">
+        <div class="field"><label>YouTube</label><input id="soc-youtube"></div>
+        <div class="field"><label>Instagram</label><input id="soc-instagram"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Spotify</label><input id="soc-spotify"></div>
+        <div class="field"><label>Apple Music</label><input id="soc-apple"></div>
+      </div>
+      <div class="field"><label>TikTok</label><input id="soc-tiktok"></div>
+    </div>
+    <div class="card">
+      <h3>Municipalidades confiadas</h3>
+      <div class="field"><label>Nombres separados por coma</label>
+        <input id="munis" placeholder="Llay-Llay, Casablanca, San Felipe">
+      </div>
+    </div>
+    <div class="card">
+      <h3>Contacto y booking</h3>
+      <div class="row2">
+        <div class="field"><label>Correo de contacto</label><input id="contact-email"></div>
+        <div class="field"><label>WhatsApp / Teléfono</label><input id="contact-phone"></div>
+      </div>
+      <div class="field"><label>ID de Formspree (formulario de booking)</label><input id="contact-formspree"></div>
+    </div>
+  </div>
+
+  <!-- CONFIG -->
+  <div class="panel" id="panel-config">
+    <div class="topbar">
+      <h2>Configuración</h2>
+      <button class="save-btn" onclick="saveConfig()">Guardar configuración</button>
+    </div>
+    <div class="config-info">
+      Los cambios guardados se suben automáticamente a GitHub y el sitio se actualiza en ~30 segundos.
+    </div>
+    <div class="card">
+      <h3>Acceso al admin</h3>
+      <div class="field"><label>Usuario admin</label><input id="cfg-user"></div>
+      <div class="field"><label>Nueva contraseña (dejar vacío para no cambiar)</label><input type="password" id="cfg-pass" placeholder="••••••••"></div>
+    </div>
+    <div class="card">
+      <h3>GitHub (necesario para guardar cambios en el sitio)</h3>
+      <div class="field"><label>Token de GitHub (Personal Access Token con permisos de repo)</label>
+        <input type="password" id="cfg-token" placeholder="ghp_xxxxxxxxxxxx">
+      </div>
+      <div class="field"><label>Repositorio (usuario/nombre-del-repo)</label>
+        <input id="cfg-repo" placeholder="cst-ss/dc_pagee-">
+      </div>
+      <p style="font-size:0.78rem;color:var(--muted);margin-top:8px">
+        El token se guarda solo en tu navegador (localStorage). Nadie más puede verlo.<br>
+        Para crear un token: GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic) → Generate new token → selecciona <span class="badge-preview">repo</span>
+      </p>
+    </div>
+  </div>
+
+</div>
+
+<!-- STATUS BAR -->
+<div class="status-bar" id="status-bar"></div>
+
+<!-- CONFIRM MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal-box">
+    <h4>¿Eliminar este elemento?</h4>
+    <p>Esta acción no se puede deshacer.</p>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="modal-confirm" id="modal-confirm-btn">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================
+   ESTADO GLOBAL
+============================================ */
+let DATA = null;
+let pendingDelete = null;
+
+/* ============================================
+   LOGIN / LOGOUT
+============================================ */
+const DEFAULT_CREDS = { user: 'admin', pass: 'diego2026' };
+
+function getCreds() {
+  try {
+    return JSON.parse(localStorage.getItem('dc_creds')) || DEFAULT_CREDS;
+  } catch { return DEFAULT_CREDS; }
+}
+
+function doLogin() {
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value;
+  const creds = getCreds();
+  if (u === creds.user && p === creds.pass) {
+    document.getElementById('login-screen').style.display = 'none';
+    init();
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+  }
+}
+
+document.getElementById('login-pass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+function doLogout() {
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+/* ============================================
+   INIT — carga content.json
+============================================ */
+async function init() {
+  try {
+    const r = await fetch('../content.json?v=' + Date.now());
+    DATA = await r.json();
+    renderAll();
+  } catch(e) {
+    showStatus('No se pudo cargar content.json. Verifica que el archivo existe en la raíz del sitio.', 'err');
+  }
+}
+
+function renderAll() {
+  renderHero();
+  renderShows();
+  renderMusic();
+  renderBio();
+  renderGallery();
+  renderVideos();
+  renderPress();
+  renderSocials();
+  renderConfig();
+}
+
+/* ============================================
+   NAVEGACIÓN
+============================================ */
+function showPanel(id, el) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  if (el) el.classList.add('active');
+  return false;
+}
+
+/* ============================================
+   HERO
+============================================ */
+function renderHero() {
+  const h = DATA.hero;
+  document.getElementById('hero-eyebrow').value = h.eyebrow || '';
+  document.getElementById('hero-title').value = h.title || '';
+  document.getElementById('hero-tagline').value = h.tagline || '';
+  document.getElementById('hero-btn1-text').value = h.btn1_text || '';
+  document.getElementById('hero-btn1-link').value = h.btn1_link || '';
+  document.getElementById('hero-btn2-text').value = h.btn2_text || '';
+  document.getElementById('hero-btn2-link').value = h.btn2_link || '';
+  document.getElementById('hero-image').value = h.image || '';
+}
+
+function collectHero() {
+  DATA.hero = {
+    eyebrow: v('hero-eyebrow'),
+    title: v('hero-title'),
+    tagline: v('hero-tagline'),
+    btn1_text: v('hero-btn1-text'),
+    btn1_link: v('hero-btn1-link'),
+    btn2_text: v('hero-btn2-text'),
+    btn2_link: v('hero-btn2-link'),
+    image: v('hero-image'),
+  };
+}
+
+/* ============================================
+   SHOWS
+============================================ */
+function renderShows() {
+  const ns = DATA.next_show;
+  document.getElementById('ns-month').value = ns.month || '';
+  document.getElementById('ns-year').value = ns.year || '';
+  document.getElementById('ns-title').value = ns.title || '';
+  document.getElementById('ns-venue').value = ns.venue || '';
+  document.getElementById('ns-badge').value = ns.badge || '';
+  document.getElementById('ns-link').value = ns.link || '';
+  document.getElementById('ns-link-text').value = ns.link_text || '';
+  renderShowsList();
+}
+
+function renderShowsList() {
+  const el = document.getElementById('shows-list-admin');
+  el.innerHTML = DATA.shows.map((s, i) => `
+    <div class="show-item">
+      <div class="show-item-body">
+        <input value="${s.day}" onchange="DATA.shows[${i}].day=this.value" placeholder="DÍA">
+        <input value="${s.monthYr}" onchange="DATA.shows[${i}].monthYr=this.value" placeholder="2026">
+        <input value="${s.name}" onchange="DATA.shows[${i}].name=this.value" placeholder="Nombre del evento">
+        <select onchange="DATA.shows[${i}].status=this.value;DATA.shows[${i}].badge=statusLabel(this.value);DATA.shows[${i}].badgeClass=statusClass(this.value);renderShowsList()">
+          ${['upcoming','pending','past','cancelled'].map(st => `<option value="${st}" ${s.status===st?'selected':''}>${statusLabel(st)}</option>`).join('')}
+        </select>
+        <input value="${s.ticketLink||''}" onchange="DATA.shows[${i}].ticketLink=this.value" placeholder="Link (opcional)">
+      </div>
+      <button class="show-del" onclick="confirmDelete(()=>{DATA.shows.splice(${i},1);renderShowsList()})">✕</button>
+    </div>
+  `).join('');
+}
+
+function statusLabel(s) {
+  return {upcoming:'Confirmado',pending:'Por confirmar',past:'Pasado',cancelled:'Cancelado'}[s] || s;
+}
+function statusClass(s) {
+  return {upcoming:'',pending:'pending',past:'past',cancelled:'past'}[s] || '';
+}
+
+function addShow() {
+  DATA.shows.unshift({ day:'—', monthYr:'2026', name:'Nuevo evento', place:'Ciudad', status:'upcoming', badge:'Confirmado', badgeClass:'', ticketLink:'' });
+  renderShowsList();
+}
+
+function collectShows() {
+  DATA.next_show = {
+    month: v('ns-month'),
+    year: v('ns-year'),
+    title: v('ns-title'),
+    venue: v('ns-venue'),
+    badge: v('ns-badge'),
+    link: v('ns-link'),
+    link_text: v('ns-link-text'),
+  };
+  // shows already updated live via onchange
+}
+
+/* ============================================
+   MUSIC
+============================================ */
+function renderMusic() {
+  const m = DATA.music;
+  document.getElementById('music-type').value = m.type || '';
+  document.getElementById('music-title').value = m.title || '';
+  document.getElementById('music-meta').value = m.meta || '';
+  document.getElementById('music-cover').value = m.cover || '';
+  document.getElementById('music-spotify').value = m.platforms.spotify || '';
+  document.getElementById('music-apple').value = m.platforms.apple || '';
+  document.getElementById('music-youtube').value = m.platforms.youtube || '';
+  document.getElementById('music-untitled').value = m.platforms.untitled || '';
+  document.getElementById('music-instagram').value = m.platforms.instagram || '';
+  document.getElementById('music-tiktok').value = m.platforms.tiktok || '';
+}
+
+function collectMusic() {
+  DATA.music = {
+    type: v('music-type'),
+    title: v('music-title'),
+    meta: v('music-meta'),
+    cover: v('music-cover'),
+    platforms: {
+      spotify: v('music-spotify'),
+      apple: v('music-apple'),
+      youtube: v('music-youtube'),
+      untitled: v('music-untitled'),
+      instagram: v('music-instagram'),
+      tiktok: v('music-tiktok'),
+    }
+  };
+}
+
+/* ============================================
+   BIO
+============================================ */
+function renderBio() {
+  document.getElementById('bio-photo').value = DATA.bio.photo || '';
+  document.getElementById('bio-quote').value = DATA.bio.quote || '';
+  renderParas();
+  renderHighlights();
+}
+
+function renderParas() {
+  document.getElementById('bio-paras').innerHTML = DATA.bio.paragraphs.map((p, i) => `
+    <div class="para-item">
+      <textarea onchange="DATA.bio.paragraphs[${i}]=this.value">${p}</textarea>
+      <button class="para-del" onclick="confirmDelete(()=>{DATA.bio.paragraphs.splice(${i},1);renderParas()})">✕</button>
+    </div>
+  `).join('');
+}
+
+function addPara() {
+  DATA.bio.paragraphs.push('Nuevo párrafo...');
+  renderParas();
+}
+
+function renderHighlights() {
+  document.getElementById('bio-highlights').innerHTML = DATA.bio.highlights.map((h, i) => `
+    <div class="hl-item">
+      <input value="${h.year}" onchange="DATA.bio.highlights[${i}].year=this.value" placeholder="Año">
+      <input value="${h.text}" onchange="DATA.bio.highlights[${i}].text=this.value" placeholder="Evento">
+      <input value="${h.sub}" onchange="DATA.bio.highlights[${i}].sub=this.value" placeholder="Lugar">
+      <button class="show-del" onclick="confirmDelete(()=>{DATA.bio.highlights.splice(${i},1);renderHighlights()})">✕</button>
+    </div>
+  `).join('');
+}
+
+function addHighlight() {
+  DATA.bio.highlights.unshift({ year: '2026', text: 'Nuevo hito', sub: '' });
+  renderHighlights();
+}
+
+function collectBio() {
+  DATA.bio.photo = v('bio-photo');
+  DATA.bio.quote = v('bio-quote');
+  // paragraphs and highlights updated live
+}
+
+/* ============================================
+   GALLERY
+============================================ */
+function renderGallery() {
+  const el = document.getElementById('gallery-admin');
+  el.innerHTML = DATA.gallery.map((g, i) => `
+    <div class="gallery-admin-item" draggable="true" ondragstart="dragStart(${i})" ondragover="dragOver(event,${i})" ondrop="drop(${i})">
+      <img src="${g.src}" alt="${g.alt}" onerror="this.style.opacity='.3'">
+      <button class="g-del" onclick="confirmDelete(()=>{DATA.gallery.splice(${i},1);renderGallery()})">✕</button>
+      <input value="${g.alt}" onchange="DATA.gallery[${i}].alt=this.value" placeholder="Descripción">
+    </div>
+  `).join('');
+}
+
+let dragIdx = null;
+function dragStart(i) { dragIdx = i; }
+function dragOver(e, i) { e.preventDefault(); }
+function drop(i) {
+  if (dragIdx === null || dragIdx === i) return;
+  const item = DATA.gallery.splice(dragIdx, 1)[0];
+  DATA.gallery.splice(i, 0, item);
+  dragIdx = null;
+  renderGallery();
+}
+
+function addGalleryItem() {
+  const src = document.getElementById('gallery-new-src').value.trim();
+  if (!src) return;
+  DATA.gallery.push({ src, alt: '', class: '' });
+  document.getElementById('gallery-new-src').value = '';
+  renderGallery();
+}
+
+function collectGallery() { /* already updated live */ }
+
+/* ============================================
+   VIDEOS
+============================================ */
+function renderVideos() {
+  document.getElementById('videos-admin').innerHTML = DATA.videos.map((v, i) => `
+    <div class="video-item">
+      <select onchange="DATA.videos[${i}].type=this.value">
+        <option value="youtube" ${v.type==='youtube'?'selected':''}>YouTube embed</option>
+        <option value="mp4" ${v.type==='mp4'?'selected':''}>Archivo MP4</option>
+        <option value="placeholder" ${v.type==='placeholder'?'selected':''}>Próximamente</option>
+      </select>
+      <input value="${v.src||''}" onchange="DATA.videos[${i}].src=this.value" placeholder="ID de YouTube o ruta MP4">
+      <input value="${v.title||''}" onchange="DATA.videos[${i}].title=this.value" placeholder="Título">
+      <button class="show-del" onclick="confirmDelete(()=>{DATA.videos.splice(${i},1);renderVideos()})">✕</button>
+    </div>
+  `).join('');
+}
+
+function addVideo() {
+  DATA.videos.push({ type: 'youtube', src: '', title: 'Nuevo video', sub: '' });
+  renderVideos();
+}
+
+function collectVideos() { /* updated live */ }
+
+/* ============================================
+   PRESS
+============================================ */
+function renderPress() {
+  document.getElementById('press-cards').innerHTML = DATA.press.cards.map((c, i) => `
+    <div class="press-item">
+      <div class="press-item-top">
+        <strong>Nota ${i+1}</strong>
+        <button class="show-del" onclick="confirmDelete(()=>{DATA.press.cards.splice(${i},1);renderPress()})">✕ Eliminar</button>
+      </div>
+      <div class="row3">
+        <div class="field"><label>Medio</label><input value="${c.outlet}" onchange="DATA.press.cards[${i}].outlet=this.value"></div>
+        <div class="field"><label>Periodista · Fecha</label><input value="${c.meta}" onchange="DATA.press.cards[${i}].meta=this.value"></div>
+        <div class="field"><label>Link (opcional)</label><input value="${c.link||''}" onchange="DATA.press.cards[${i}].link=this.value" placeholder="https://..."></div>
+      </div>
+      <div class="field"><label>Cita o extracto</label><textarea onchange="DATA.press.cards[${i}].quote=this.value">${c.quote}</textarea></div>
+    </div>
+  `).join('');
+
+  document.getElementById('press-appearances').innerHTML = DATA.press.appearances.map((a, i) => `
+    <div class="hl-item">
+      <input value="${a.year}" onchange="DATA.press.appearances[${i}].year=this.value" placeholder="Año">
+      <input value="${a.name}" onchange="DATA.press.appearances[${i}].name=this.value" placeholder="Nombre del evento" style="grid-column: span 2">
+      <button class="show-del" onclick="confirmDelete(()=>{DATA.press.appearances.splice(${i},1);renderPress()})">✕</button>
+    </div>
+  `).join('');
+}
+
+function addPressCard() {
+  DATA.press.cards.push({ outlet: 'Nuevo medio', quote: 'Cita del artículo...', meta: 'Periodista · 2026', link: '' });
+  renderPress();
+}
+
+function addAppearance() {
+  DATA.press.appearances.unshift({ name: 'Nuevo evento', year: '2026' });
+  renderPress();
+}
+
+function collectPress() { /* updated live */ }
+
+/* ============================================
+   SOCIALS
+============================================ */
+function renderSocials() {
+  document.getElementById('soc-youtube').value = DATA.socials.youtube || '';
+  document.getElementById('soc-instagram').value = DATA.socials.instagram || '';
+  document.getElementById('soc-spotify').value = DATA.socials.spotify || '';
+  document.getElementById('soc-apple').value = DATA.socials.apple || '';
+  document.getElementById('soc-tiktok').value = DATA.socials.tiktok || '';
+  document.getElementById('munis').value = (DATA.municipalities || []).join(', ');
+  document.getElementById('contact-email').value = DATA.contact?.email || '';
+  document.getElementById('contact-phone').value = DATA.contact?.phone || '';
+  document.getElementById('contact-formspree').value = DATA.contact?.formspree_id || '';
+}
+
+function collectSocials() {
+  DATA.socials = {
+    youtube: v('soc-youtube'),
+    instagram: v('soc-instagram'),
+    spotify: v('soc-spotify'),
+    apple: v('soc-apple'),
+    tiktok: v('soc-tiktok'),
+  };
+  DATA.municipalities = v('munis').split(',').map(s => s.trim()).filter(Boolean);
+  DATA.contact = {
+    email: v('contact-email'),
+    phone: v('contact-phone'),
+    formspree_id: v('contact-formspree'),
+  };
+}
+
+/* ============================================
+   CONFIG
+============================================ */
+function renderConfig() {
+  const creds = getCreds();
+  document.getElementById('cfg-user').value = creds.user || 'admin';
+  document.getElementById('cfg-token').value = localStorage.getItem('dc_gh_token') || '';
+  document.getElementById('cfg-repo').value = localStorage.getItem('dc_gh_repo') || 'cst-ss/dc_pagee-';
+}
+
+function saveConfig() {
+  const user = v('cfg-user') || 'admin';
+  const pass = v('cfg-pass');
+  const oldCreds = getCreds();
+  localStorage.setItem('dc_creds', JSON.stringify({ user, pass: pass || oldCreds.pass }));
+  localStorage.setItem('dc_gh_token', v('cfg-token'));
+  localStorage.setItem('dc_gh_repo', v('cfg-repo'));
+  document.getElementById('cfg-pass').value = '';
+  showStatus('✓ Configuración guardada', 'ok');
+}
+
+/* ============================================
+   SAVE — sube content.json a GitHub
+============================================ */
+const collectors = {
+  hero: collectHero,
+  shows: collectShows,
+  music: collectMusic,
+  bio: collectBio,
+  gallery: collectGallery,
+  videos: collectVideos,
+  press: collectPress,
+  socials: collectSocials,
+};
+
+async function savePanel(panel) {
+  if (collectors[panel]) collectors[panel]();
+
+  const token = localStorage.getItem('dc_gh_token');
+  const repo = localStorage.getItem('dc_gh_repo') || 'cst-ss/dc_pagee-';
+
+  if (!token) {
+    showStatus('⚠ Configura tu token de GitHub en Configuración primero.', 'err');
+    return;
+  }
+
+  const btn = document.querySelector(`#panel-${panel} .save-btn`);
+  btn.textContent = 'Guardando…';
+  btn.disabled = true;
+
+  try {
+    // 1. Obtener SHA actual del archivo
+    const fileResp = await fetch(`https://api.github.com/repos/${repo}/content.json`, {
+      headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
+    });
+    const fileData = await fileResp.json();
+    const sha = fileData.sha;
+
+    // 2. Subir el archivo actualizado
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(DATA, null, 2))));
+    const putResp = await fetch(`https://api.github.com/repos/${repo}/content.json`, {
+      method: 'PUT',
+      headers: {
+        Authorization: `token ${token}`,
+        Accept: 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        message: `Admin: update ${panel}`,
+        content,
+        sha,
+      })
+    });
+
+    if (putResp.ok) {
+      btn.textContent = '✓ Guardado';
+      btn.classList.add('success');
+      showStatus('✓ Cambios guardados. El sitio se actualiza en ~30 segundos.', 'ok');
+    } else {
+      const err = await putResp.json();
+      throw new Error(err.message || 'Error al guardar');
+    }
+  } catch(e) {
+    btn.textContent = '✕ Error';
+    btn.classList.add('error');
+    showStatus('Error: ' + e.message, 'err');
+  } finally {
+    setTimeout(() => {
+      btn.textContent = 'Guardar cambios';
+      btn.disabled = false;
+      btn.classList.remove('success', 'error');
+    }, 3000);
+  }
+}
+
+/* ============================================
+   HELPERS
+============================================ */
+function v(id) {
+  return document.getElementById(id)?.value?.trim() || '';
+}
+
+function showStatus(msg, type) {
+  const bar = document.getElementById('status-bar');
+  bar.textContent = msg;
+  bar.className = 'status-bar show ' + type;
+  setTimeout(() => bar.classList.remove('show'), 4000);
+}
+
+function confirmDelete(fn) {
+  pendingDelete = fn;
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal() {
+  pendingDelete = null;
+  document.getElementById('modal').classList.remove('open');
+}
+
+document.getElementById('modal-confirm-btn').onclick = () => {
+  if (pendingDelete) pendingDelete();
+  closeModal();
+};
+
+/* Auto-check si ya hay sesión */
+window.addEventListener('DOMContentLoaded', () => {
+  // No auto-login, siempre pide credenciales
+});
+</script>
+</body>
+</html>
